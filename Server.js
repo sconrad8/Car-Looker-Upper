@@ -4,6 +4,8 @@ var router = express.Router();
 var path = __dirname + '/views/';
 
 app.use(express.static('Styles'));
+app.use(express.static('Images'));
+app.use(express.static('Scripts'));
 
 router.use(function (req,res,next) {
   console.log("/" + req.method);
