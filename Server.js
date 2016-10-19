@@ -1,7 +1,9 @@
 var express = require("express");
 var app = express();
+var server  = require('http').createServer(app);
 var router = express.Router();
 var path = __dirname + '/views/';
+var port = process.env.PORT || 3000;
 
 app.use(express.static('Styles'));
 app.use(express.static('Images'));
@@ -31,6 +33,4 @@ app.use("*",function(req,res){
   res.sendFile(path + "404.html");
 });
 
-app.listen(3000,function(){
-  console.log("Live at Port 3000");
-});
+server.listen(port);
