@@ -6,6 +6,7 @@ var path = __dirname + '/views/';
 app.use(express.static('Styles'));
 app.use(express.static('Images'));
 app.use(express.static('Scripts'));
+app.use(express.static('node_modules/bootstrap'));
 
 router.use(function (req,res,next) {
   console.log("/" + req.method);
