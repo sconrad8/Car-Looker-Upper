@@ -9,6 +9,7 @@ app.use(express.static('Styles'));
 app.use(express.static('Images'));
 app.use(express.static('Scripts'));
 app.use(express.static('node_modules/bootstrap'));
+app.use(express.static('Misc'));
 
 router.use(function (req,res,next) {
   console.log("/" + req.method);
@@ -25,6 +26,10 @@ router.get("/about",function(req,res){
 
 router.get("/contact",function(req,res){
   res.sendFile(path + "contact.html");
+});
+
+router.get("/specs",function(req,res){
+  res.sendFile(path + "specs.html");
 });
 
 app.use("/",router);
