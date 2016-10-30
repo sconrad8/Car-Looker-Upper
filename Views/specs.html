@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="dist/css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" type="text/css" href="specs.css">
   <script src="jquery.min.js"></script>
   <script src="dist/js/bootstrap.min.js"></script>
+  <script src="specs.js"></script>
 </head>
 <body>
 <nav class="navbar navbar-inverse">
@@ -29,7 +31,43 @@
   </div>
 </nav>
 
+<div class="container-fluid main-container specs-container">
 
+<div class="row vehicleTitle">
+  <div class="text-center">
+    <h1 id="currentVehicle">2013 Hyundai Genesis Coupe</h1>
+  </div>
+</div>
+
+<!-- tooltip over maintenance name that gives description of item -->
+<div class="row">
+  <h2>Maintenance Schedule</h2>
+</div>
+<div class="row">
+  <div class="table-responsive">
+    <table id="maintenanceTable" class="table table-hover table-bordered">
+      <thead>
+        <tr>
+          <th colspan="3" class="text-center">Service</th>
+          <th colspan="30" class="text-center">Mileage (Miles)</th>
+        </tr>
+      </thead>
+      <thead>
+      <tr>
+        <th>Item</th>
+        <th>Action</th>
+        <th>Frequency</th>
+        <!-- Add mileage headers by 7500 miles until max interval mileage is reached -->
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Add rows dynamically sorted based on lowest interval time -->
+    </tbody>
+  </table>
+</div>
+</div>
+
+</div>
 
 </body>
 </html>
