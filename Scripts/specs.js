@@ -90,17 +90,20 @@ function getMaintenanceSchedule(vehicleId) {
 	add the filled row to end of table
 
 notes:
-	- intervalMileage has the possibility of being zero. if this is the case, give it an interval mileage of 
-		7500 * round(intervalMonths/12)
+	- round(intervalMileage) has the possibility of being zero. if this is the case, give it an interval mileage of 
+		7500 * round(intervalMonths/12). If still zero then give intervalMileage of 7500.
 */
 function createMaintenanceTable() {
 	var table = document.getElementById('maintenanceTable');
 	table.innerHTML = '';
 	addMaintenanceHeaders(table);
+	var sortedServices = sortByKey(maintenanceServices, 'intervalMileage');
 	// table.insertRow(2).innerHTML = '<td colspan="2" class="text-center">Service</td><td class="text-center"><span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span></td>'
 	// cell = table.insertRow(2).insertCell(2);
 	// cell.className = 'text-center';
 	// cell.innerHTML = '<span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span>';
+	addMaintenanceRows(table, sortedServices);
+
 	$('#maintenanceScheduleContainer').removeClass('hidden');
 }
 
@@ -113,8 +116,51 @@ function addMaintenanceHeaders(table) {
 	row.insertCell(0).innerHTML = '<b>Item</b>';
 	row.insertCell(1).innerHTML = '<b>Action</b>';
 	var mileage = document.getElementById('selectScheduleRange').value - 67500;
+	var cell;
 	for (var i = 2; i < 12; i++) {
-		row.insertCell(i).innerHTML = '<b>' + mileage + '</b>';
+		cell = row.insertCell(i);
+		if (i % 2 == 0) {
+			cell.style.backgroundColor = '#f2f2f2';
+		}
+		cell.innerHTML = '<b>' + mileage + '</b>';
+		mileage += 7500;
+	}
+}
+
+function sortByKey(array, key) {
+	return array.sort(function(a, b) {
+		var x = a[key]; var y = b[key];
+		return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+	});
+}
+
+function addMaintenanceRows(table, services) {
+	var mileage = document.getElementById('selectScheduleRange').value - 67500;
+	services.forEach(function(service) {
+		var row = table.insertRow(-1);
+		var cell = row.insertCell(0);
+		cell.className = 'text-center';
+		cell.innerHTML = service.item;
+		cell = row.insertCell(1);
+		cell.className = 'text-center';
+		cell.innerHTML = service.action;
+		addMileageCells(row, service, mileage);
+	});
+}
+
+//give mileage columns staggered background color instead of fixed header
+function addMileageCells(row, service, mileage) {
+	var approxServiceMileage = 7500 * Math.round(service.intervalMileage / 7500);
+	var cell;
+	for (var i = 2; i < 12; i++) {
+		cell = row.insertCell(i);
+		cell.className = 'text-center';
+		if (i % 2 == 0) {
+			cell.style.backgroundColor = '#f2f2f2';
+		}
+		if (mileage % approxServiceMileage == 0) {
+			cell.innerHTML = '<span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span>';
+		}
 		mileage += 7500;
 	}
 }
