@@ -219,7 +219,7 @@ function concatRows(table) {
 			var row = table.rows[dupService[key][r]];
 			var cc = c;
 			var shouldRemove = false;
-			while (cc < dupService[key].length && ~shouldRemove) {
+			while (cc < 12 && ~shouldRemove) {
 				if (row.cells[cc].innerHTML == '<span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span>') {
 					row.cells[0] = '';
 					shouldRemove = true;
