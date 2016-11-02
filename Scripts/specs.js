@@ -3,6 +3,7 @@
 var vehicleSearch = window.location.search;
 var vehicleParams = parseQueryString(vehicleSearch.toLowerCase());
 var maintenanceServices = [];
+var dupService = {};
 
 getVehicleId(vehicleParams);
 
@@ -35,6 +36,7 @@ function getVehicleId(vehicle) {
 	var make = replaceAll('+', ' ', vehicle.make);
 	var model = replaceAll('+', ' ', vehicle.model);
 	var year = replaceAll('+', ' ', vehicle.year);
+	document.getElementById('currentVehicle').innerHTML = year + ' ' + make + ' ' + model;
 
 	$.ajax({
 		url: 'https://api.edmunds.com/api/vehicle/v2/' + make + '/' + model + '/years?fmt=json&api_key=2tbstf54r42kccaf42qk665n',
@@ -55,6 +57,7 @@ function getVehicleId(vehicle) {
 			}
 		},
 		error: function(err) {
+			$('#maintenanceScheduleMissing').removeClass('hidden');
 			console.log('ERROR--> Vehicle not found.');
 		}
 	});
@@ -67,12 +70,15 @@ function getMaintenanceSchedule(vehicleId) {
 		data: {},
 		dataType: 'json',
 		success: function(json) {
-			//to round mileage, 7500 * round(mileage/7500)
-			//table will be in increments of 75,000 beginning at 7500 to 75000 then 82500 to 150000
-			maintenanceServices = json.actionHolder;
-			createMaintenanceTable();
+			if (json.actionHolder.length > 0) {
+				maintenanceServices = json.actionHolder;
+				createMaintenanceTable();
+			} else {
+				$('#maintenanceScheduleMissing').removeClass('hidden');
+			}
 		},
 		error: function(err) {
+			$('#maintenanceScheduleMissing').removeClass('hidden');
 			console.log('ERROR--> Maintenance schedule not found.')
 		}
 	});
@@ -96,6 +102,7 @@ notes:
 function createMaintenanceTable() {
 	var table = document.getElementById('maintenanceTable');
 	table.innerHTML = '';
+	dupService = {};
 	addMaintenanceHeaders(table);
 	var sortedServices = sortByKey(maintenanceServices, 'intervalMileage');
 	// table.insertRow(2).innerHTML = '<td colspan="2" class="text-center">Service</td><td class="text-center"><span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span></td>'
@@ -136,6 +143,8 @@ function sortByKey(array, key) {
 
 function addMaintenanceRows(table, services) {
 	var mileage = document.getElementById('selectScheduleRange').value - 67500;
+	//create object with itemaction as key
+	//if value is within range
 	services.forEach(function(service) {
 		var row = table.insertRow(-1);
 		var cell = row.insertCell(0);
@@ -144,13 +153,19 @@ function addMaintenanceRows(table, services) {
 		cell = row.insertCell(1);
 		cell.className = 'text-center';
 		cell.innerHTML = service.action;
-		addMileageCells(row, service, mileage);
+		addMileageCells(table, row, service, mileage);
 	});
+	concatRows(table);
+	//remove all rows with cell(0).innerHTML == ''
+	removeEmptyRows(table);
 }
 
-//give mileage columns staggered background color instead of fixed header
-function addMileageCells(row, service, mileage) {
+function addMileageCells(table, row, service, mileage) {
 	var approxServiceMileage = 7500 * Math.round(service.intervalMileage / 7500);
+	if (approxServiceMileage == 0) {
+		approxServiceMileage = 7500;
+	}
+	var inRange = false;
 	var cell;
 	for (var i = 2; i < 12; i++) {
 		cell = row.insertCell(i);
@@ -160,7 +175,79 @@ function addMileageCells(row, service, mileage) {
 		}
 		if (mileage % approxServiceMileage == 0) {
 			cell.innerHTML = '<span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span>';
+			inRange = true;
 		}
 		mileage += 7500;
+	}
+	if (!inRange) {
+		table.deleteRow(-1);
+		return;
+	}
+	for (var i = 2; i < table.rows.length - 1; i++) {
+		if (row.innerHTML == table.rows[i].innerHTML) {
+			table.rows[i].cells[0].innerHTML = '';
+		}
+		if (row.cells[0].innerHTML == table.rows[i].cells[0].innerHTML &&
+		 		row.cells[1].innerHTML == table.rows[i].cells[1].innerHTML) {
+			//dupService is an object in which each key holds an array of row indices
+			table.rows[i].cells[0].innerHTML = '';
+			var key = service.item + service.action;
+			key = key.replace(/[^a-zA-Z]+/g, '');
+			if (key in dupService) {
+				if (!dupService[key].includes(table.rows.length)) {
+					dupService[key].push(table.rows.length);
+				}
+			} else {
+				dupService[key] = [i, table.rows.length - 1];
+			}
+		}
+	}
+}
+
+function concatRows(table) {
+	for (var key in dupService) {
+		var last = dupService[key][dupService[key].length - 1];
+		var c = 12;
+		var cFound = false;
+		while (!cFound && c > 2) {
+			c--;
+			if (table.rows[last].cells[c].innerHTML == '<span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span>') {
+				cFound = true;
+			}
+		}
+		for (var r = dupService[key].length - 2; r >= 0; r--) {
+			var row = table.rows[dupService[key][r]];
+			var cc = c;
+			var shouldRemove = false;
+			while (cc < dupService[key].length && ~shouldRemove) {
+				if (row.cells[cc].innerHTML == '<span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span>') {
+					row.cells[0] = '';
+					shouldRemove = true;
+				}
+				cc++;
+			}
+			if (~shouldRemove) {
+				//table.rows[last].cells[2:c-1] equals row.cells[2:c-1]
+				for (var k = 2; k < c; k++) {
+					table.rows[last].cells[k].innerHTML = row.cells[k].innerHTML;
+				}
+				//move c to next checkmark
+				var cFound = false;
+				while (!cFound && c > 2) {
+					c--;
+					if (table.rows[last].cells[c].innerHTML == '<span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span>') {
+						cFound = true;
+					}
+				}
+			}
+		}
+	}
+}
+
+function removeEmptyRows(table) {
+	for (var r = table.rows.length - 1; r >= 2; r--) {
+		if (table.rows[r].cells[0].innerHTML == '') {
+			table.deleteRow(r);
+		}
 	}
 }
