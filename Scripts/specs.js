@@ -195,7 +195,7 @@ function addMileageCells(table, row, service, mileage) {
 			key = key.replace(/[^a-zA-Z]+/g, '');
 			if (key in dupService) {
 				if (!dupService[key].includes(table.rows.length)) {
-					dupService[key].push(table.rows.length);
+					dupService[key].push(table.rows.length - 1);
 				}
 			} else {
 				dupService[key] = [i, table.rows.length - 1];
@@ -211,6 +211,8 @@ function concatRows(table) {
 		var cFound = false;
 		while (!cFound && c > 2) {
 			c--;
+			console.log(last);
+			console.log(table.rows.length);
 			if (table.rows[last].cells[c].innerHTML == '<span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span>') {
 				cFound = true;
 			}
