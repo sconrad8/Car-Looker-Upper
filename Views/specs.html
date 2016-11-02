@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 <title>Car Looker Upper</title>
@@ -5,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="dist/css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" type="text/css" href="specs.css">
   <script src="jquery.min.js"></script>
   <script src="dist/js/bootstrap.min.js"></script>
 </head>
@@ -17,7 +19,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="/">Logo</a>
+      <a class="navbar-brand" href="/">CLU</a>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
@@ -29,7 +31,49 @@
   </div>
 </nav>
 
+<div class="container-fluid main-container specs-container">
 
+<div class="row vehicleTitle">
+  <div class="text-center">
+    <h1><span id="currentVehicle"></span></h1>
+  </div>
+</div>
 
+<!-- tooltip over maintenance name that gives description of item -->
+<div id="maintenanceScheduleContainer" class="hidden">
+  <div class="row">
+    <div class="col-sm-4">
+      <h2>Maintenance Schedule</h2>
+    </div>
+    <br>
+    <form class="form-inline col-sm-4 col-sm-offset-1">
+      <div class="form-group">
+        <label class="select-inline">Vehicle Mileage:</label>
+        <select class="form-control" id="selectScheduleRange" onchange="createMaintenanceTable()">
+          <option value="75000">75,000 or less</option>
+          <option value="150000">75,001 to 150,000</option>
+          <option value="225000">150,001 to 225,000</option>
+          <option value="300000">225,001 to 300,000</option>
+        </select>
+      </div>
+    </form>
+  </div>
+  <div class="row">
+    <div class="table-responsive">
+      <table id="maintenanceTable" class="table table-hover table-bordered">
+        <tbody>
+          <!-- Add rows dynamically sorted based on lowest interval time -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="maintenanceScheduleMissing" class="text-center hidden">
+  <h1>Maintenance Schedule Unavailable</h1>
+</div>
+
+</div>
+<script src="specs.js"></script>
 </body>
 </html>
