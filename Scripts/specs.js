@@ -184,17 +184,22 @@ function addMileageCells(table, row, service, mileage) {
 		return;
 	}
 	for (var i = 2; i < table.rows.length - 1; i++) {
+		var key = service.item + service.action;
+		key = key.replace(/[^a-zA-Z]+/g, '');
+		var moveOn = false;
 		if (row.innerHTML == table.rows[i].innerHTML) {
 			table.rows[i].cells[0].innerHTML = '';
+			if (key in dupService && dupService[key].includes(i)) {
+				dupService[key].splice(dupService[key].indexOf(i),1);
+				moveOn = true;
+			}
 		}
-		if (row.cells[0].innerHTML == table.rows[i].cells[0].innerHTML &&
-		 		row.cells[1].innerHTML == table.rows[i].cells[1].innerHTML) {
+		if ((row.cells[0].innerHTML == table.rows[i].cells[0].innerHTML &&
+		 		row.cells[1].innerHTML == table.rows[i].cells[1].innerHTML) || moveOn) {
 			//dupService is an object in which each key holds an array of row indices
 			table.rows[i].cells[0].innerHTML = '';
-			var key = service.item + service.action;
-			key = key.replace(/[^a-zA-Z]+/g, '');
 			if (key in dupService) {
-				if (!dupService[key].includes(table.rows.length)) {
+				if (!dupService[key].includes(table.rows.length - 1)) {
 					dupService[key].push(table.rows.length - 1);
 				}
 			} else {
@@ -211,8 +216,6 @@ function concatRows(table) {
 		var cFound = false;
 		while (!cFound && c > 2) {
 			c--;
-			console.log(last);
-			console.log(table.rows.length);
 			if (table.rows[last].cells[c].innerHTML == '<span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span>') {
 				cFound = true;
 			}
@@ -221,17 +224,23 @@ function concatRows(table) {
 			var row = table.rows[dupService[key][r]];
 			var cc = c;
 			var shouldRemove = false;
-			while (cc < 12 && ~shouldRemove) {
+			while (cc < 12 && !shouldRemove) {
 				if (row.cells[cc].innerHTML == '<span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span>') {
 					row.cells[0] = '';
 					shouldRemove = true;
 				}
 				cc++;
 			}
-			if (~shouldRemove) {
+			if (!shouldRemove) {
 				//table.rows[last].cells[2:c-1] equals row.cells[2:c-1]
-				for (var k = 2; k < c; k++) {
+				var k = 2;
+				var endNow = false;
+				while (k < c && !endNow) {
 					table.rows[last].cells[k].innerHTML = row.cells[k].innerHTML;
+					if (table.rows[last].cells[k].innerHTML == '<span class="glyphicon glyphicon-ok" style="font-size:1.5em"></span>') {
+						endNow = true;
+					}
+					k++;
 				}
 				//move c to next checkmark
 				var cFound = false;
